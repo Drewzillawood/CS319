@@ -1,0 +1,114 @@
+<html>
+
+
+<style>
+		
+		div.container {
+
+			width: 100%;
+			border: 1px solid gray;
+
+		}
+
+		header, footer {
+
+			padding: 1em;
+			color: white;
+			background-color: blue;
+			clear: left;
+			text-align: center; 
+
+		}
+
+		table, th, td {
+
+			border: 2px solid black;
+
+		}
+
+		input, select {
+
+			margin: auto;
+			display: block;
+
+		}
+		
+		img {
+			
+			display: none;
+			height: 16px;
+			width: 16px;
+		
+		}
+
+</style>
+
+<script src="./validation2.js"></script>	
+	
+<h1>
+Contact Information
+</h1>
+
+	<form id = "thisForm2">
+	
+		<section>
+		
+			<table style = "width:100%">
+			
+				<tr id = "titles">
+					<th>Field Label</th>
+					<th>Field Type</th> 
+					<th>Result</th>
+				</tr>
+				
+				<tr id = "email">
+					
+					<td>Email</td>
+					<td> <input type="text" value=""; </td>
+					<td>
+				
+						<img src = "wrong.png" alt = "wrong" class = "wrong">
+						<img src = "correct.png" alt = "correct" class = "correct">
+				
+					</td>
+				
+				</tr>
+				
+				<tr id = "pNumber">
+				
+					<td>Phone</td>
+					<td> <input type="text" value=""; </td>
+					<td>
+				
+						<img src = "wrong.png" alt = "wrong" class = "wrong">
+						<img src = "correct.png" alt = "correct" class = "correct">
+				
+					</td>
+				
+				</tr>
+				
+				<tr id = "address">
+				
+					<td>Address</td>
+					<td> <input type="text" value=""; </td>
+					<td>
+				
+						<img src = "wrong.png" alt = "wrong" class = "wrong">
+						<img src = "correct.png" alt = "correct" class = "correct">
+				
+					</td>
+				
+				</tr>
+			
+			</table>
+		
+		</section>
+	
+		<input type="submit" value="Submit">
+	
+	</form>
+	
+	
+
+</html>
+

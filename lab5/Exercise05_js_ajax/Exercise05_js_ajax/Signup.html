@@ -1,0 +1,49 @@
+<hmtl>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+
+<h1>Please enter a new Username and Password</h1>
+<!-- Simple form for submitting login information -->
+<form id="form" action="login.php">
+	Username: <input id = "usr" type="test"><div id="udne"></div>
+	Password: <input id = "psw" type="password"><br>
+	<input id="sub" type ="button" value="Submit">
+</form>
+
+<script>
+
+$(document).ready(function() {
+	
+	// On click make an ajax call to Signup.php
+	$("#sub").click(function() {
+
+		// Pass the user and password values
+		$.ajax({
+			url : 'Signup.php',
+			type : 'POST',
+			data : {user : $("#usr").val(),
+					pswd : $("#psw").val()},
+			success : function(output) {
+
+				// If user is valid, move on to viewPosts.php
+				if(output == 1) {
+
+					$("#form").submit();
+
+				// Else, do not redirect. Display error message
+				} else {
+
+					$("#udne").html("Username already exists");
+
+				}
+
+			}
+		});
+
+	});
+
+});
+
+</script>
+</hmtl>

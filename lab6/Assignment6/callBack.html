@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>callBack</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+
+		function getUser(successCallback) {
+			$.ajax({
+				url: "callBack.php",
+				type: "post",
+				data: {
+					// blah blah
+				},
+				success: function(userData) {
+					successCallback(new User(data));
+				} 
+			});
+		}
+
+
+		function doSomething() {
+			var bookShelf = something();
+			getUser(function(user) {
+				bookShelf.addBookForUser(user);
+			})
+		}
+
+		
+
+	</script>
+</body>
+</html>

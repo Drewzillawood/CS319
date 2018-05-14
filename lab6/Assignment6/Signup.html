@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Signup</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+</head>
+<body>
+	<form id="signup" action="login.html">
+		<table border = '2'>
+			<tbody>
+				<tr>
+					<th>Field Label</th>
+				</tr>
+				<tr>
+					<td>Username</td>
+					<td><input id="usr" type="text"></td>
+				</tr>
+				<tr>
+					<td>Password</td>
+					<td><input id="psw" type="password"></td>
+				</tr>
+				<tr>
+					<td>Confirm Password</td>
+					<td><input id="cpw" type="password"></td>
+				</tr>
+				<tr>
+					<td>Email</td>
+					<td><input id="eml" type="text"></td>
+				</tr>
+				<tr>
+					<td>Phone</td>
+					<td><input id="num" type="text"></td>
+				</tr>
+				<tr>
+					<td>Librarian</td>
+					<td>
+						<input id="lib" type="checkbox"> Librarian
+					</td>
+				</tr>
+				<tr>
+					<td>First Name</td>
+					<td><input id="fnm" type="text"></td>
+				</tr>
+				<tr>
+					<td>Last Name</td>
+					<td><input id="lnm" type="text"></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<input id="sub" type="button" value="Submit">
+	<div id="err"></div>
+</body>
+	<script>
+
+	$(document).ready(function() {
+
+		$("#sub").click(function() {
+
+			var lib = 0;
+			if($("#lib").is(":checked")) {
+
+				lib = 1;
+
+			}
+
+		   	var user = [$("#usr").val(),
+			 			$("#psw").val(),
+						$("#cpw").val(),
+						$("#eml").val(),
+						$("#num").val(),
+						lib,
+						$("#fnm").val(),
+						$("#lnm").val()];
+
+			$.ajax({
+
+				url : "Signup.php",
+				type: "POST",
+				data: {usr : user},
+				success : function(e) {
+
+					if(e == 1) {
+
+						$("#signup").submit();
+
+					} else {
+
+						$("#err").text("Sorry, invalid/unavailable credentials.");
+
+					}
+
+				}
+
+			});
+
+		});
+
+	});
+
+	</script>
+</html>

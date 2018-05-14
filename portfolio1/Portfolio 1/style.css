@@ -1,0 +1,9 @@
+html, body {
+  height: 100%;
+}
+
+canvas{
+	border: 5px inset black;
+    position: relative;
+    left:  700px;;
+}

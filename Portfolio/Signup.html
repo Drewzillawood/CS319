@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>mineSweeperSignup</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+	<style type="text/css">
+		table {
+
+			border : 2px solid black;
+			border-collapse : collapse;
+
+		}
+		td {
+
+			padding : 2px;
+			border : 1px solid black;
+
+		}
+	</style>
+</head>
+<body>
+	<form id="signup" action="login.html">
+		<table>
+			<tbody>
+				<tr>
+					<th colspan="2">Welcome! Please enter a new username to begin!</th>
+				</tr>
+				<tr>
+					<td>Username</td>
+					<td><input id="usr" type="text"></td>
+				</tr>
+				<tr>
+					<td>First Name</td>
+					<td><input id="fnm" type="text"></td>
+				</tr>
+				<tr>
+					<td>Last Name</td>
+					<td><input id="lnm" type="text"></td>
+				</tr>
+					<td>Email</td>
+					<td><input id="eml" type="text"></td>
+				<tr>
+					<td>Password</td>
+					<td><input id="psw" type="password"></td>
+				</tr>
+				<tr>
+					<td>Confirm Password</td>
+					<td><input id="cpw" type="password"></td>
+				</tr>
+			</tbody>
+		</table>
+		<input id="sub" type="button" value="Create">
+		<div id="Error"></div> 
+	</form>
+</body>
+	<script>
+
+		$(document).ready(function() {
+
+			function checkUser(user) {
+
+				$.ajax({
+					url : "Signup.php",
+					type : "POST",
+					data : {usr : user},
+					success : function(e) {
+
+						if(e == 1) {
+
+							$("#signup").submit();
+
+						} else {
+
+							$("#Error").html("Error : invalid input.");
+
+						}
+
+					}
+					
+				});
+
+			}
+
+			function getUser() {
+
+				user = [$("#usr").val(),
+					    $("#fnm").val(),
+					    $("#lnm").val(),
+					    $("#eml").val(),
+					    $("#psw").val(),
+					    $("#cpw").val()];
+				
+				return user;
+
+			}
+
+			$("#sub").click(function() {
+
+				checkUser(getUser());
+
+			});
+
+		});
+
+	</script>
+</html>

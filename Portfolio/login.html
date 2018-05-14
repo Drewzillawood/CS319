@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>login</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+</head>
+<body>
+	<form id="log" action="titlePage.html">
+		<table border = '2px'>
+			<tbody>
+				<tr>
+					<th colspan="2">Please login with your credentials.</th>
+				</tr>
+				<tr>
+					<td>UserName</td>
+					<td><input id="usr" type="text"></td>
+				</tr>
+				<tr>
+					<td>Password</td>
+					<td><input id="psw" type="password"></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<input id="sub" type="button" value="Login">
+	<div id="error"></div>
+	<div id="leaderboard"></div>
+</body>
+	<script>
+		$(document).ready(function() {
+
+			$.ajax({
+
+				url : "leaderboard.php",
+				type: "POST",
+				success : function(e) {
+
+					$("#leaderboard").html(e);
+
+				}
+
+			});
+
+			$("#sub").click(function() {
+
+				$.ajax({
+
+					url  : "login.php",
+					type : "POST",
+					data : {usr : $("#usr").val(),
+							psw : $("#psw").val()},
+					success : function(e) {
+
+						if(e == 1) {
+
+							$("#log").submit();
+
+						} else {
+
+							$("#error").html("Error : Incorrect username/password");
+
+						}
+
+					}
+
+				})
+
+			});
+
+		});
+	</script>
+</html>

@@ -1,0 +1,52 @@
+var c = document.getElementById("linerunner").getContext("2d");
+c.fillStyle = '#FF0000';
+var play = document.getElementById('play');
+var direction = 0;
+var checking = false;
+var xPos = 0;  //x position
+var yPos = 200; //y position - start in the middle of the canvas
+var speed = 3; //this can be adjusted to make the line move faster/slower
+function turnRight(){
+    if(direction < 3) {
+        direction++;
+    } else {
+        direction = 0;
+    }
+}
+function turnLeft(){ 
+    if(direction > 0){
+        direction = direction - 1;
+    }
+    else {
+        direction = 3;
+    }
+}
+function line(){ //changes the position of the line
+    if(checking){
+        c.fillRect(xPos, yPos, 7, 7);
+        if (direction == 0){
+          xPos = xPos + speed;
+        }
+        if(direction == 2){
+          xPos = xPos - speed;
+        }
+        if(direction == 1){
+          yPos = yPos + speed;
+        }
+        if(direction == 3){
+          yPos = yPos - speed;
+        }
+    }
+}
+
+function program(){ //starts the program and also changes the text of the button "Start"
+    if(checking){
+        checking = !checking;
+        play.innerHTML = 'Start';
+    }
+    else {
+        checking = !checking;
+        play.innerHTML = 'Stop';
+        setInterval(line, 50);
+    }
+}

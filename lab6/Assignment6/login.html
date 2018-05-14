@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>login</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+</head>
+<body>
+	<form id="login" action="viewShelves.html">
+		<table>
+			<tbody>
+				<tr>
+					<th>Welcome, Please login.</th>
+				</tr>
+				<tr>
+					<td>Username: <input id="usr" type="text"></td>
+				</tr>
+				<tr>
+					<td>Password: <input id="psw" type="password"></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<input id="sub" type="button" value="Login">
+	<div id="err"></div>
+</body>
+	<script>
+		
+	$(document).ready(function() {
+
+		$("#sub").click(function() {
+
+			$.ajax({
+
+				url : "login.php",
+				type: "POST",
+				data: {usr : $("#usr").val(), 
+					   psw : $("#psw").val()},
+				success : function(e) {
+
+					console.log(e);
+					if(e == 0) {
+
+						$("#err").text("Incorrect Username/Password.");
+
+					} else {
+
+						$("#login").submit();
+
+					}
+					
+				}
+
+			});
+
+		});
+
+	});
+
+	</script>
+</html>

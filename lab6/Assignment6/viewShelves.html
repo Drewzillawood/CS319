@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>viewShelves</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+	<style type="text/css">
+		
+		#userDisplay {
+
+			position:absolute;
+			top:0;
+			right:0;
+
+		}
+
+		#logout {
+
+			position:absolute;
+			top:1em;
+			right:0;
+
+		}
+
+	</style>
+</head>
+<body>
+	<div id="userDisplay"></div>
+	<div id="logout"></div>
+	<h1>Welcome to the library</h1>
+	<div id="library"></div>
+	<div id="bookInfo"></div>
+	<div id="checkout"></div>
+	<div id="checkin"></div>
+	<div id="loan"></div>
+	<div id='libThings'></div>
+</body>
+	<script>
+		class User {
+
+			constructor(username) {
+
+				username = JSON.parse(username);
+				this.user = this.determine(username);
+
+			}
+
+			determine(username) {
+
+				if(username[4] == 1) {
+
+					return new Librarian(username);
+
+				} else {
+
+					return new Student(username);
+
+				}
+
+			}
+
+		}
+
+		class Student {
+
+			constructor(username) {
+
+				this.username = username[0];
+				this.email    = username[2];
+				this.phone    = username[3];
+				this.fname    = username[5];
+				this.lname    = username[6];
+
+			}
+
+			checkout(book, cell) {
+
+				$.ajax({
+
+					url  : "checkout.php",
+					type : "POST",
+					data : {book : book},
+					success : function(e) {
+
+						if(e == 1) {
+
+							$(cell).css('background-color', 'red');
+
+						} else {
+
+							$("#libThings").text("You've checked out too many books!");
+
+						}
+
+					}
+
+				});
+
+			}
+
+			checkin(book) {
+
+				$.ajax({
+
+					url : "checkin.php",
+					type : "POST",
+					data : {book : book},
+					success : function (e) {
+
+
+
+					}
+
+				});
+
+			}
+
+			isLibrarian() {
+
+				return false;
+
+			}
+
+		} 
+
+		class Librarian {
+
+			constructor(username) {
+
+				this.username = username[0];
+				this.email    = username[2];
+				this.phone    = username[3];
+				this.fname    = username[5];
+				this.lname    = username[6];
+
+			}
+
+			isLibrarian() {
+
+				return true;
+
+			}
+
+		}
+
+
+		$(document).ready(function() {
+
+			$.ajax({ 
+
+				url : "viewShelves.php",
+				type: "POST",
+				data: {display : 1,
+					   table   : 0,
+					   info    : null,
+					   book    : null},
+				success : function(e) {
+
+					$("#userDisplay").text(e);
+					$("#logout").html("<form action='login.html' id='not'><input id='logging' type='button' value='logout'></form>");
+
+					$("#logging").click(function() {
+
+						$.ajax({
+
+							url  : "logout.php",
+							success : function() {
+
+								$("#not").submit();
+
+							}
+
+						});
+
+					});
+
+					$.ajax({
+
+						url : "viewShelves.php",
+						type: "POST",
+						data: {display : 0,
+							   table   : 1,
+							   info    : null,
+							   book    : null},
+						success : function(output) {
+
+							$("#library").html(output);
+							$(".cell0").css('background-color', 'red');
+
+							$(".cell1, .cell0, .header").click(function () {
+
+								var cell = this;
+								$.ajax({
+
+									url  : "viewShelves.php",
+									type : "POST",
+									data : {display : 0,
+											table   : 0,
+											info    : $(this).text(),
+											book    : null},
+									success : function(e) {
+
+										e = JSON.parse(e);
+										var book = e;
+										if(book != null) {
+
+											$("#bookInfo").html("BookId: "+book[0]+"<br> BookTitle: "+book[1]+"<br> Author: "+book[2]+"<br> Availability: "+book[3]);
+											
+										}
+
+										$.ajax({
+
+											url  : "checkUsers.php",
+											type : "POST",
+											data : {username : $("#userDisplay").text()},
+											success : function(output) {
+
+												var user = new User(output);
+												if(!user.user.isLibrarian()) {
+
+													$("#checkout").html("<input id='out' type ='button' value='Checkout'>");
+													$("#checkin").html("<input id='in' type='button' value='Checkin'>");
+
+													$("#out").click(function() {
+
+														user.user.checkout(book, cell);
+
+													});
+
+													$("#in").click(function() {
+
+														user.user.checkin(book);
+														$(cell).css('background-color', 'white');
+
+													});
+
+												} else {
+
+													$("#checkout").html("<input id='add' type='button' value='Add Book'>");
+													$("#checkin").html("<input id='del' type='button' value='Delete Book'>");
+													$("#loan").html("<input id='loans' type='button' value='View Loan History'>");
+
+													$("#add").click(function() {
+
+														$("#libThings").html("BookId : <input id='thisId' type='text'><br>Book Title : <input id='thisTitle' type='text'><br>Book Author<input id='thisAuthor' type='texxt'><br><input id='subButton' type='button' value='Submit'>");
+
+														$("#subButton").click(function() {
+
+															$.ajax({
+
+																url : "createBook.php",
+																type : "POST",
+																data : {BookId    : $("#thisId").val(),
+																		BookTitle : $("#thisTitle").val(),
+																		Author    : $("#thisAuthor").val()},
+																success : function(e) {
+
+																	if(e == 1) {
+
+																		$.ajax({
+
+																			url  : "viewShelves.php",
+																			type : "POST",
+																			data : {display : 0,
+																					table   : 1,
+																					info    : null,
+																					book    : null},
+																			success : function(e) {
+
+																				$("#library").html(e);
+
+																			}
+
+																		});
+
+																	} else {
+
+																		$("#libThings").text("You can't add anymore books of this category!");
+
+																	}
+
+																}
+
+															});
+
+														});
+
+													});
+
+													$("#del").click(function() {
+
+														$("#libThings").html("BookId : <input id='thisId' type='text'><input id='subButton' type='button' value='Submit'>");
+
+														$("#subButton").click(function() {
+
+															$.ajax({
+
+																url  : "deleteBook.php",
+																type : "POST",
+																data : {BookId : $("#thisId").val()},
+																success : function(e) {
+
+																	console.log(e);
+																	$.ajax({
+
+																		url  : "viewShelves.php",
+																		type : "POST",
+																		data : {display : 0,
+																				table   : 1,
+																				info    : null,
+																				book    : null},
+																		success : function(e) {
+
+																			$("#library").html(e);
+
+																		}
+
+																	})
+
+																}
+
+															});
+
+														});
+
+													});
+
+													$("#loans").click(function() {
+
+														$("#libThings").html("Username : <input id='thisUser' type='text'><input id='subButton' type='button' value='Submit'><br><div id='history'></div>");
+
+														$("#subButton").click(function() {
+
+															$.ajax({
+
+																url  : "displayLoanHistory.php",	
+																type : "POST",
+																data : {user : $("#thisUser").val()},
+																success : function(e) {
+
+																	$("#history").html(e);
+
+																}
+
+															});
+
+														});
+
+													});
+
+												}
+
+											}
+
+										});
+
+									}
+
+								});
+
+							});
+
+						}
+
+					});
+
+				}
+
+			});
+
+		});
+	</script>
+</html>

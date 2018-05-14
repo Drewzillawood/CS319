@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>titlePage</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery.min.js"></script>
+	<style type="text/css">
+		.cell {
+
+			width : 20px;
+			height : 20px;
+			background-color : blue;
+			text-align : center;
+			border: 1px solid black;
+
+		}
+		#game {
+
+			border : 1px solid black;
+			border-collapse: collapse;
+			margin : 0 auto;
+
+		}
+		#userDisplay {
+
+			position:absolute;
+			top:0;
+			right:0;
+
+		}
+		#logout {
+
+			position: absolute;
+			top: 1em;
+			right: 0;
+
+		}
+	</style>
+</head>
+<body>
+	<div id="src">
+		WELCOME TO MINESWEEPER!
+		<table border='2'>
+			<tr>
+				<th colspan="2">SELECT DIFFICULTY</th>
+			</tr>
+			<tr>
+				<td>EASY</td>
+				<td><input id="easy" type="button" value="BEGIN"></td>
+			</tr>
+			<tr>
+				<td>INTERMEDIATE</td>
+				<td><input id="intermediate" type="button" value="BEGIN"></td>
+			</tr>
+			<tr>
+				<td>EXPERT</td>
+				<td><input id="expert" type="button" value="BEGIN"></td>
+			</tr>
+		</table>
+	</div>
+	<div id="gameContainer"></div>
+	<div id="userDisplay"></div>
+	<div id="logout">
+		<form id="logRedirect" action="login.html">
+			<input id="logButton" type="button" value="logout">
+		</form>
+	</div>
+</body>
+	<script>
+		
+		$(document).ready(function() {
+
+			$.ajax({
+
+				url : "titlePage.php",
+				type: "POST",
+				data: {time : null,
+				       diff : null},
+				success : function(e) {
+
+					$("#userDisplay").html(e);
+
+				}
+
+			})
+
+			$("#logButton").click(function() {
+
+				$.ajax ({
+
+					url : "logout.php",
+					success : function() {
+
+						$("#gameContainer").hide();
+						$("#logRedirect").submit();
+
+					}
+
+				});
+				
+			});
+
+			$("input").click(function() {
+
+				var id = $(this).attr("id");
+				initializeGame(id);
+
+			});
+
+		});
+
+		function initializeGame(difficulty) {
+
+			$("#src").hide();
+			var game;
+			if(difficulty == "easy") {
+
+				game = new Minesweeper(9, 9, 10);
+
+			} else if(difficulty == "intermediate") {
+
+				game = new Minesweeper(16, 16, 40);
+
+			} else {
+
+				game = new Minesweeper(16, 30, 99);
+
+			}
+			displayGame(game);
+
+			$(".cell").click(function() {
+
+				if(game._gameOver) {
+
+					game.gameOver();
+
+				} 
+
+				var currentCell = $(this).attr("id").match(/^\d+|\d+\b|\d+(?=\w)/g);
+				var row = parseInt(currentCell[0]);
+				var col = parseInt(currentCell[1]);
+				var cell = game._grid[row][col];
+				if(!cell._revealed && !cell._isMine) {
+
+					if(cell._count > 0) {
+
+						reveal(game._grid, this, cell._count, row, col, true);
+
+					} else if(cell._count == 0) {
+
+						game.clearRegion(row, col);
+						reveal(game._grid, this, cell._count, row, col, true);
+
+					} 
+
+				} else if(cell._isMine) {
+
+					reveal(game._grid, this, cell._count, row, col, false);
+					game._gameOver = true;
+
+				}
+
+				if(game.isGameWon()) {
+
+					var d = new Date();
+					var finishTime = (d.getTime() - game._startTime) / 1000;
+					game._gameWon = true;
+					$.ajax({
+
+						url  : "titlePage.php",
+						type : "POST",
+						data : {time : finishTime,
+								diff : difficulty},
+						success : function(e) {
+
+							console.log(e);
+
+						}
+
+					});
+					game.gameWon(finishTime, difficulty);
+
+				}
+
+			});
+
+		}
+
+		function reveal(grid, cell, count, row, col, gameOver) {
+
+			if(gameOver) {
+
+				grid[row][col]._revealed = true;
+				$(cell).css("background-color","white");
+				$(cell).html(count);
+				for(var i = 0; i < grid.length; i++) {
+
+					for(var j = 0; j < grid[0].length; j++) {
+
+						if(grid[i][j]._revealed) {
+
+							$("#"+i+"_"+j).css("background-color","white");
+							$("#"+i+"_"+j).html(grid[i][j]._count);
+
+						}
+
+					}
+
+				}
+
+			} else {
+
+				for(var i = 0; i < grid.length; i++) {
+
+					for(var j = 0; j < grid[0].length; j++) {
+
+						if(grid[i][j]._isMine) {
+
+							$("#"+i+"_"+j).css("background-color","red");
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+		function displayGame(game) {
+
+			var gameBuilder = "<table id='game' border='1'>";
+			for(var i = 0; i < game._grid.length; i++) {
+
+				gameBuilder += "<tr>";
+				for(var j = 0; j < game._grid[0].length; j++) {
+
+					gameBuilder += "<td id='"+i+"_"+j+"' class='cell'></td>";
+
+				}
+				gameBuilder += "</tr>";
+
+			}
+			gameBuilder += "</table>";
+			$("#gameContainer").html(gameBuilder);
+
+		}
+
+		class Minesweeper {
+
+			constructor(rows, columns, numberOfMines) {
+
+				this._rows = rows;
+				this._columns = columns;
+				this._numberOfMines = numberOfMines;
+				this._grid = new Array(rows);
+
+				var d = new Date();
+				this._startTime = d.getTime();
+
+				for(var i = 0; i < rows; i++) {
+
+					this._grid[i] = new Array(columns);
+					for(var j = 0; j < columns; j++) {
+
+						this._grid[i][j] = new Cell(i, j);
+
+					}
+
+				}
+
+				for(var i = 0; i < numberOfMines; i++) {
+
+					var row = Math.floor((Math.random() * (rows-1)));
+					var col = Math.floor((Math.random() * (columns-1)));
+
+					
+
+					if(this._grid[row][col]._isMine) {
+
+						i--;
+
+					}
+
+					this._grid[row][col]._isMine = true;
+
+				}
+				this.initCounts(this._grid);
+				this._gameOver = false;
+				this._gameWon  = false;
+
+			}
+
+			initCounts(grid) {
+
+				for(var i = 0; i < grid.length; i++) {
+
+					for(var j = 0; j < grid[0].length; j++) {
+
+						if(grid[i][j]._isMine) {
+
+							grid[i][j]._count = -1;
+
+						} else {
+
+							grid[i][j]._count = this.countNeighboringMines(grid, i, j);
+
+						}
+
+					}
+
+				}
+
+			}
+
+			countNeighboringMines(grid, givenRow, givenCol) {
+
+				var upper = Math.max(0, givenRow-1);
+				var lower = Math.min(grid.length-1, givenRow+1);
+				var left  = Math.max(0, givenCol-1);
+				var right = Math.min(grid[0].length-1,givenCol+1); 
+				var count = 0;
+
+				for(var i = upper; i <= lower; i++) {
+
+					for(var j = left; j <= right; j++) {
+
+						if(i == givenRow && j == givenCol) {
+
+
+
+						} else if(grid[i][j]._isMine){
+
+							count++;
+
+						}
+
+					}
+
+				}
+
+				return count;
+
+			}
+
+			clearRegion(givenRow, givenCol) {
+
+				var upper = Math.max(0, givenRow-1);
+				var lower = Math.min(this._grid.length-1, givenRow+1);
+				var left  = Math.max(0, givenCol-1);
+				var right = Math.min(this._grid[0].length-1, givenCol+1); 
+
+				if(this._grid[givenRow][givenCol]._count != 0) {
+
+					return;
+
+				}
+
+				for(var i = upper; i <= lower; i++) {
+
+					for(var j = left; j <= right; j++) {
+
+						if(this._grid[i][j]._count == 0 && !this._grid[i][j]._revealed) {
+
+							this._grid[i][j]._revealed = true;
+							this.clearRegion(i, j);
+
+						} else if(this._grid[i][j]._count > 0) {
+
+							this._grid[i][j]._revealed = true;
+
+						}
+
+					}
+
+				}
+
+			}
+
+			isGameWon() {
+
+				var count = 0;
+				for(var i = 0; i < this._grid.length; i++) {
+
+					for(var j = 0; j < this._grid[0].length; j++) {
+
+						if(this._grid[i][j]._revealed) {
+
+							count++;
+
+						}
+
+					}
+
+				}
+
+				if(count == this._rows*this._columns - this._numberOfMines) {
+
+					return true;
+
+				} else {
+
+					return false;
+
+				}
+
+			}
+
+			gameOver() {
+
+				alert("SORRY, MAYBE NEXT TIME!");
+				$("#gameContainer").html("");
+				$("#src").show();
+
+			}
+
+			gameWon(time, difficulty) {
+
+				alert("CONGRATS you won on: "+difficulty+" with a time of: "+time+"!");
+				$("#gameContainer").html("");
+				$("#src").show();
+
+			}
+
+		}
+
+		class Cell {
+
+			constructor(givenRow, givenColumn) {
+
+				this._revealed = false;
+				this._flag     = false;
+				this._row      = givenRow;
+				this._col      = givenColumn;
+				this._isMine   = false;
+				this._count    = 0;
+
+			}
+
+		}
+
+	</script>
+</html>
